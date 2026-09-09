@@ -1,40 +1,88 @@
 # RupeeWise — Expense Tracker
 
-Production-ready full-stack expense tracking app with React, Express, and MongoDB. Includes working CRUD, search/category filters, monthly analytics, charts, INR formatting, validation, responsive UI, security headers, and a production static build.
+A simple, minimal, premium expense tracker for India. React frontend, Node.js/Express API,
+MongoDB storage, INR (₹) throughout. Every button works: full CRUD, search, filters, sorting,
+pagination, CSV export, category drill-downs, charts and a responsive mobile layout.
 
-## Local development
+## Features
+
+- **Dashboard** — total expenses, this-month spend with last-month trend, average, 6-month
+  spending trend chart, category donut, recent transactions
+- **Transactions** — search (title/note), category filter, from/to date range, sortable columns,
+  pagination, CSV export of the current view
+- **Add / Edit / Delete** — validated modal form + confirm dialogs and toast feedback
+- **Categories** — per-category totals, counts, share bars; click a card to drill into its transactions
+- **Settings** — editable profile, database status, full CSV export, delete-all with confirmation
+- **Production-ready** — security headers (helmet), gzip, request logging, Zod validation,
+  central error handling, health check, Docker + CI, unit tests
+
+## Quick start
 
 ```bash
-cp .env.example .env
-docker compose up -d mongo
+cp .env.example .env        # set MONGODB_URI (or use the memory demo below)
 npm install
-npm run dev
+npm run dev                 # API :5000 + client :5173
 ```
+
 Open `http://localhost:5173`.
 
-For a quick ephemeral demo without MongoDB, set `ALLOW_MEMORY_DB=true` and leave `MONGODB_URI` empty. This mode is intentionally disabled in production.
+No MongoDB handy? For an **ephemeral local demo only**:
+
+```bash
+ALLOW_MEMORY_DB=true npm run dev
+```
+
+Memory mode is disabled in production — set `MONGODB_URI` there.
+
+Optional demo data:
+
+```bash
+npm run seed -- --clear
+```
 
 ## Production
-
-Set `MONGODB_URI` and optionally `CLIENT_ORIGIN`, then:
 
 ```bash
 npm ci
 npm run build
-NODE_ENV=production npm start
+NODE_ENV=production MONGODB_URI="mongodb+srv://..." npm start
 ```
 
-The Express process serves both the API and compiled React client. Deploy to Render, Railway, Fly.io, or a Node host and use MongoDB Atlas. Health check: `/api/health`.
+The Express process serves both the API and the compiled React client.
+Health check: `GET /api/health`.
 
-## GitHub
+### Docker
 
 ```bash
-git init
-git add .
-git commit -m "Build RupeeWise expense tracker"
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/rupeewise.git
-git push -u origin main
+docker compose up --build   # app on :5000 + MongoDB
 ```
 
-Never commit `.env`. Configure environment variables in your hosting provider.
+### Deploy
+
+- **Render/Railway/Fly.io**: use the included `Dockerfile` (or `render.yaml`), set `MONGODB_URI`
+  to a MongoDB Atlas cluster.
+- Any Node 20+ host works: `npm ci && npm run build && npm start`.
+
+## API
+
+| Method | Path | Description |
+|---|---|---|
+| GET | `/api/health` | Status, DB mode, expense count |
+| GET | `/api/categories` | Category taxonomy |
+| GET | `/api/stats` | Totals, monthly + per-category aggregates |
+| GET | `/api/expenses?search=&category=&from=&to=&sort=&order=&page=&limit=` | Paginated list |
+| POST | `/api/expenses` | Create (`title, amount, category, date, note?`) |
+| PUT | `/api/expenses/:id` | Update |
+| DELETE | `/api/expenses/:id` | Delete |
+| DELETE | `/api/expenses?confirm=all` | Delete all |
+| GET | `/api/expenses/export.csv?...filters` | CSV download |
+
+## Tests
+
+```bash
+npm test    # node:test — validation + repository (in-memory) suites
+```
+
+## Tech
+
+React 18 · Vite · Recharts · Express 4 · Mongoose 8 · Zod · DM Sans UI
